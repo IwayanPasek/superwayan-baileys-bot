@@ -54,7 +54,7 @@ async function generateWithRetry(promptText, maxDemandRetries = 30, delayMs = 50
             })();
 
             const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("AI_TIMEOUT_EXCEEDED")), 25000)
+                setTimeout(() => reject(new Error("AI_TIMEOUT_EXCEEDED")), 45000)
             );
 
             const resText = await Promise.race([aiCallPromise, timeoutPromise]);

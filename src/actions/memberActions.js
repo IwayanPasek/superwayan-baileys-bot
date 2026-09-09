@@ -38,7 +38,7 @@ const memberActions = {
                 continue;
             }
 
-            validTargets.push(targetJid);
+            validTargets.push(priv.actualJid || targetJid);
         }
 
         if (validTargets.length === 0) {
@@ -72,9 +72,10 @@ const memberActions = {
             throw new Error(`Aksi ditolak: Target sudah berstatus sebagai Admin.`);
         }
 
-        console.log(`[LOG ACTION PROMOTE] Mengeksekusi promote ${targetJid} di ${remoteJid}`);
-        await sock.groupParticipantsUpdate(remoteJid, [targetJid], "promote");
-        return `Promote ${targetJid}`;
+        const actualTarget = priv.actualJid || targetJid;
+        console.log(`[LOG ACTION PROMOTE] Mengeksekusi promote ${actualTarget} di ${remoteJid}`);
+        await sock.groupParticipantsUpdate(remoteJid, [actualTarget], "promote");
+        return `Promote ${actualTarget}`;
     },
     DEMOTE: async (sock, remoteJid, rawParams) => {
         const targetJid = toJid(rawParams);
@@ -88,9 +89,10 @@ const memberActions = {
             throw new Error(`Aksi ditolak: Target bukan merupakan Admin.`);
         }
 
-        console.log(`[LOG ACTION DEMOTE] Mengeksekusi demote ${targetJid} di ${remoteJid}`);
-        await sock.groupParticipantsUpdate(remoteJid, [targetJid], "demote");
-        return `Demote ${targetJid}`;
+        const actualTarget = priv.actualJid || targetJid;
+        console.log(`[LOG ACTION DEMOTE] Mengeksekusi demote ${actualTarget} di ${remoteJid}`);
+        await sock.groupParticipantsUpdate(remoteJid, [actualTarget], "demote");
+        return `Demote ${actualTarget}`;
     }
 };
 
