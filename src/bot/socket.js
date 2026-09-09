@@ -174,7 +174,7 @@ async function handleMessageUpsert(sock, messages, type) {
 
     // Cek apakah bot di-tag
     const isTagged = isBotTagged(mentionedJidList, messageText, botInternalNumber, quotedMessageKey);
-    log.info('ACCESS', `Evaluasi Tag - isTagged: ${isTagged}, isOwner: ${isOwner}, isGroup: ${isGroup}, botInternalNumber: ${botInternalNumber}, botNumFromEnv: ${BOT_NUMBER}`);
+    log.info('ACCESS', `Evaluasi Tag - isTagged: ${isTagged}, isOwner: ${isOwner}, isGroup: ${isGroup}, botInternalNumber: ${botInternalNumber}, text: "${messageText}", mentions: ${JSON.stringify(mentionedJidList)}, quote: ${quotedMessageKey ? 'yes' : 'no'}`);
 
     // Tolak akses member biasa yang tag bot
     if (isTagged && !isOwner) {
