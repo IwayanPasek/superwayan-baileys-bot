@@ -18,7 +18,7 @@ if (AI_PROVIDER === "gemini") {
     anthropicClient = new Anthropic({ apiKey: AI_API_KEY || process.env.ANTHROPIC_API_KEY });
 }
 
-async function generateWithRetry(promptText, maxDemandRetries = 30, delayMs = 5000) {
+async function generateWithRetry(promptText, maxDemandRetries = 3, delayMs = 5000) {
     let attempt = 1;
     while (attempt <= maxDemandRetries) {
         try {
@@ -54,7 +54,7 @@ async function generateWithRetry(promptText, maxDemandRetries = 30, delayMs = 50
             })();
 
             const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error("AI_TIMEOUT_EXCEEDED")), 45000)
+                setTimeout(() => reject(new Error("AI_TIMEOUT_EXCEEDED")), 15000)
             );
 
             const resText = await Promise.race([aiCallPromise, timeoutPromise]);
