@@ -50,10 +50,11 @@ async function runSinglePromptWithRetry(sock, msg, promptText, isGroup, mentione
 
         if (aiResponse.includes("STATUS: LEWATI_AKSI")) {
             console.log(`[LOG SINGLE PROMPT] AI memutuskan melewati aksi (STATUS: LEWATI_AKSI).`);
-            const cleaned = cleanAiResponseForChat(aiResponse);
-            if (cleaned.trim()) {
-                await sock.sendMessage(remoteJid, { text: cleaned }, { quoted: msg }).catch(() => {});
+            let cleaned = cleanAiResponseForChat(aiResponse);
+            if (!cleaned || cleaned.trim().length === 0) {
+                cleaned = "Mohon maaf, aksi tidak dapat dijalankan atau dilewati karena terdapat batasan hak akses atau target tidak memenuhi syarat.";
             }
+            await sock.sendMessage(remoteJid, { text: cleaned }, { quoted: msg }).catch(() => {});
             return;
         }
 

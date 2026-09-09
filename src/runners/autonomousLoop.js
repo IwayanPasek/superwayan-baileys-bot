@@ -140,7 +140,11 @@ async function runNestedAutonomousLoop(sock, remoteJid, initialPrompt, chatHisto
 
                 if (finalResponse.includes("STATUS: LEWATI_AKSI")) {
                     finalSuccess = true;
-                    await updateStatusMessage(sock, remoteJid, `✅ *PROSES SELESAI & JAWABAN AKHIR*:\n\nProses diselesaikan dengan menyesuaikan batasan hak akses sistem grup.`, statusKeyRef);
+                    let cleaned = cleanAiResponseForChat(finalResponse);
+                    if (!cleaned || cleaned.trim().length === 0) {
+                        cleaned = "Proses diselesaikan dengan menyesuaikan batasan hak akses sistem grup.";
+                    }
+                    await updateStatusMessage(sock, remoteJid, `✅ *PROSES SELESAI & JAWABAN AKHIR*:\n\n${cleaned}`, statusKeyRef);
                     break;
                 }
 
