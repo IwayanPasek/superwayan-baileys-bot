@@ -2,6 +2,7 @@ const { generateWithRetry } = require('../ai/provider');
 const { executeAiActions } = require('../actions');
 const { cleanAiResponseForChat, summarizeActionResults, updateStatusMessage, formatLoopProgress, formatLoopSummary } = require('../utils/messageHelper');
 const { buildGroupMetaContext, buildChatHistoryContext, buildErrorFeedback, buildIterationPrompt, buildFinalPrompt } = require('./promptBuilder');
+const log = require('../utils/logger');
 const {
     LOOP_MAX_OUTER_STEPS,
     LOOP_MAX_INNER_STEPS,
@@ -379,7 +380,18 @@ async function runNestedAutonomousLoop(
     }
 }
 
+/**
+ * Membatalkan semua loop aktif (digunakan saat graceful shutdown).
+ */
+function cancelAllLoops() {
+    for (const [remoteJid, loopState] of activeLoops.entries()) {
+        log.warn('LOOP', `Membatalkan loop aktif di grup: ${remoteJid}`);
+        loopState.cancel = true;
+    }
+}
+
 module.exports = {
     activeLoops,
-    runNestedAutonomousLoop
+    runNestedAutonomousLoop,
+    cancelAllLoops
 };
