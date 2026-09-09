@@ -12,6 +12,13 @@ const ENABLE_SEND_DM = (process.env.ENABLE_SEND_DM || "false").toLowerCase() ===
 const ENABLE_ADD_MEMBER = (process.env.ENABLE_ADD_MEMBER || "false").toLowerCase() === "true";
 const MAX_DESTRUCTIVE_ACTIONS_PER_RUN = parseInt(process.env.MAX_DESTRUCTIVE_ACTIONS_PER_RUN || "10", 10);
 
+// Konfigurasi Autonomous Loop
+const LOOP_MAX_OUTER_STEPS = parseInt(process.env.LOOP_MAX_OUTER_STEPS || "5", 10);
+const LOOP_MAX_INNER_STEPS = parseInt(process.env.LOOP_MAX_INNER_STEPS || "5", 10);
+const LOOP_STEP_TIMEOUT_MS = parseInt(process.env.LOOP_STEP_TIMEOUT_MS || "60000", 10);
+const LOOP_BASE_RETRY_DELAY_MS = parseInt(process.env.LOOP_BASE_RETRY_DELAY_MS || "2000", 10);
+const LOOP_MAX_LOG_ENTRIES = parseInt(process.env.LOOP_MAX_LOG_ENTRIES || "20", 10);
+
 const PORT = process.env.PORT || 30493;
 
 const OWNER_NUMBER = (process.env.OWNER_NUMBER || "").trim() + "@s.whatsapp.net";
@@ -42,6 +49,11 @@ module.exports = {
     ENABLE_SEND_DM,
     ENABLE_ADD_MEMBER,
     MAX_DESTRUCTIVE_ACTIONS_PER_RUN,
+    LOOP_MAX_OUTER_STEPS,
+    LOOP_MAX_INNER_STEPS,
+    LOOP_STEP_TIMEOUT_MS,
+    LOOP_BASE_RETRY_DELAY_MS,
+    LOOP_MAX_LOG_ENTRIES,
     PORT,
     OWNER_NUMBER,
     OWNER_LID,

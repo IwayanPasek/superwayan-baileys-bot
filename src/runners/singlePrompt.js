@@ -31,7 +31,7 @@ async function runSinglePromptWithRetry(sock, msg, promptText, isGroup, mentione
             errorFeedback = `\n[LAPORAN ERROR EKSEKUSI PERCOBAAN SEBELUMNYA]:\n${lastActionErrors}\n\nInstruksi Pengaman: Perbaiki target/parameter aksi berdasarkan [Daftar Anggota] atau tulis 'STATUS: LEWATI_AKSI'.`;
         }
 
-        const fullPrompt = `${groupContext}${currentHistory ? `[Riwayat Diskusi Grup Sebelumnya]:\n${currentHistory}\n\n` : ""}[Instruksi Owner]: ${promptText}${errorFeedback}\n[Instruksi Sistem: Sembunyikan penjelasan debug, alasan teknis internal, atau teks intro/outro dari chat balasan. Langsung berikan hasil akhir atau eksekusi aksi.]`;
+        const fullPrompt = `${groupContext}${currentHistory ? `[Riwayat Diskusi Grup Sebelumnya]:\n${currentHistory}\n\n` : ""}[Instruksi Owner]: ${promptText}${errorFeedback}\n[Instruksi Sistem: Jika instruksi Owner meminta tindakan (seperti kick, promote, demote, add, dll), WAJIB langsung keluarkan blok perintah aksinya, misalnya [AKSI: KICK | nomor_target]. Ambil nomor/JID target dari [Target yang Di-Tag Owner di Pesan Ini] atau [Daftar Anggota]. JANGAN gunakan STATUS: LEWATI_AKSI kecuali target adalah Owner/Creator grup sendiri atau target tidak ada di grup. Sembunyikan penjelasan debug, alasan teknis internal, atau teks intro/outro dari chat balasan. Langsung berikan hasil akhir atau eksekusi aksi.]`;
 
         let aiResponse = null;
         try {
@@ -47,6 +47,8 @@ async function runSinglePromptWithRetry(sock, msg, promptText, isGroup, mentione
             await new Promise(resolve => setTimeout(resolve, 1500));
             continue;
         }
+
+        console.log(`[LOG SINGLE PROMPT] Raw AI Response:\n${aiResponse}`);
 
         if (aiResponse.includes("STATUS: LEWATI_AKSI")) {
             console.log(`[LOG SINGLE PROMPT] AI memutuskan melewati aksi (STATUS: LEWATI_AKSI).`);
@@ -70,8 +72,14 @@ async function runSinglePromptWithRetry(sock, msg, promptText, isGroup, mentione
             continue;
         }
 
-        if (cleanedReplyText.trim()) {
-            await sock.sendMessage(remoteJid, { text: cleanedReplyText }, { quoted: msg }).catch(() => {});
+        const successfulActions = actionResults.filter(r => r.status === 'SUCCESS');
+        let replyToSend = cleanedReplyText.trim();
+        if (!replyToSend && successfulActions.length > 0) {
+            replyToSend = successfulActions.map(r => `✅ ${r.detail}`).join('\n');
+        }
+
+        if (replyToSend) {
+            await sock.sendMessage(remoteJid, { text: replyToSend }, { quoted: msg }).catch(() => {});
             console.log(`[LOG SINGLE PROMPT] Balasan bersih berhasil dikirim ke chat.`);
         }
         return;

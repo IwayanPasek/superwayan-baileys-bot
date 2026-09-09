@@ -68,9 +68,46 @@ async function updateStatusMessage(sock, remoteJid, text, statusKeyRef) {
     }
 }
 
+/**
+ * Memformat status progress loop yang informatif untuk ditampilkan ke Owner.
+ * Contoh: "[PROSES] Fase 1/2 | Langkah 2/5 | ✅ 3 aksi | ⚠️ 1 gagal"
+ */
+function formatLoopProgress(outerStep, maxOuter, innerStep, maxInner, stats) {
+    const parts = [
+        `Fase ${outerStep}/${maxOuter}`,
+        `Langkah ${innerStep}/${maxInner}`
+    ];
+    if (stats.successCount > 0) parts.push(`✅ ${stats.successCount} aksi`);
+    if (stats.failCount > 0) parts.push(`⚠️ ${stats.failCount} gagal`);
+    if (stats.skipCount > 0) parts.push(`⏭️ ${stats.skipCount} dilewati`);
+    return `[PROSES] ${parts.join(' | ')}`;
+}
+
+/**
+ * Memformat ringkasan akhir loop untuk dikirim ke Owner.
+ */
+function formatLoopSummary(stats, cancelled = false) {
+    const lines = [];
+    if (cancelled) {
+        lines.push('⛔ *Proses dibatalkan oleh Owner.*');
+    } else {
+        lines.push('✅ *PROSES SELESAI*');
+    }
+    lines.push('');
+    lines.push('📊 *Statistik Eksekusi:*');
+    lines.push(`- Total langkah dijalankan: ${stats.totalSteps}`);
+    if (stats.successCount > 0) lines.push(`- Aksi berhasil: ${stats.successCount}`);
+    if (stats.failCount > 0) lines.push(`- Aksi gagal: ${stats.failCount}`);
+    if (stats.skipCount > 0) lines.push(`- Aksi dilewati: ${stats.skipCount}`);
+    if (stats.retryCount > 0) lines.push(`- Total retry: ${stats.retryCount}`);
+    return lines.join('\n');
+}
+
 module.exports = {
     extractMessageContent,
     cleanAiResponseForChat,
     summarizeActionResults,
-    updateStatusMessage
+    updateStatusMessage,
+    formatLoopProgress,
+    formatLoopSummary
 };
