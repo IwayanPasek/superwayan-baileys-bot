@@ -21,7 +21,7 @@ function isOwnerMessage(senderJid, remoteJid) {
 }
 
 // ─── Helper: Cek Apakah Bot di-Tag ──────────────────────────────────────────
-function isBotTagged(mentionedJidList, messageText, botInternalNumber) {
+function isBotTagged(mentionedJidList, messageText, botInternalNumber, quotedMessageKey) {
     const cleanBotNum = BOT_NUMBER ? BOT_NUMBER.replace(/[^0-9]/g, '') : '';
     const mentionMatch = mentionedJidList.some(jid =>
         (botInternalNumber && jid.includes(botInternalNumber)) ||
@@ -30,7 +30,9 @@ function isBotTagged(mentionedJidList, messageText, botInternalNumber) {
     const textMatch =
         (botInternalNumber && messageText.includes(`@${botInternalNumber}`)) ||
         (cleanBotNum && messageText.includes(`@${cleanBotNum}`));
-    return mentionMatch || textMatch;
+    const quoteMatch = quotedMessageKey ? quotedMessageKey.fromMe : false;
+    
+    return mentionMatch || textMatch || quoteMatch;
 }
 
 // ─── Helper: Bersihkan Mention Bot dari Teks ────────────────────────────────
@@ -171,7 +173,8 @@ async function handleMessageUpsert(sock, messages, type) {
     }
 
     // Cek apakah bot di-tag
-    const isTagged = isBotTagged(mentionedJidList, messageText, botInternalNumber);
+    const isTagged = isBotTagged(mentionedJidList, messageText, botInternalNumber, quotedMessageKey);
+    log.debug('ACCESS', `Evaluasi Tag - isTagged: ${isTagged}, isOwner: ${isOwner}, isGroup: ${isGroup}, botInternalNumber: ${botInternalNumber}`);
 
     // Tolak akses member biasa yang tag bot
     if (isTagged && !isOwner) {
