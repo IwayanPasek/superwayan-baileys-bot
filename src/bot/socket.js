@@ -15,9 +15,8 @@ const log = require('../utils/logger');
 // ─── Helper: Cek Apakah Pengirim adalah Owner ───────────────────────────────
 function isOwnerMessage(senderJid, remoteJid) {
     return (
-        senderJid === OWNER_NUMBER ||
-        remoteJid === OWNER_NUMBER ||
-        (OWNER_LID && senderJid === OWNER_LID)
+        (OWNER_NUMBER && (senderJid === OWNER_NUMBER || remoteJid === OWNER_NUMBER)) ||
+        (OWNER_LID && (senderJid === OWNER_LID || remoteJid === OWNER_LID))
     );
 }
 

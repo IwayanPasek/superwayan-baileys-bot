@@ -21,7 +21,7 @@ const LOOP_MAX_LOG_ENTRIES = parseInt(process.env.LOOP_MAX_LOG_ENTRIES || "20", 
 
 const PORT = process.env.PORT || 30493;
 
-const OWNER_NUMBER = (process.env.OWNER_NUMBER || "").trim() + "@s.whatsapp.net";
+const OWNER_NUMBER = process.env.OWNER_NUMBER ? process.env.OWNER_NUMBER.trim() + "@s.whatsapp.net" : "";
 let OWNER_LID = (process.env.OWNER_LID || "").trim();
 if (OWNER_LID && !OWNER_LID.includes('@')) {
     OWNER_LID = OWNER_LID + "@lid";
@@ -31,7 +31,7 @@ const BOT_NUMBER = (process.env.BOT_NUMBER || "").trim();
 function validateEnv() {
     console.log('[LOG CONFIG] Memvalidasi environment variables...');
     const missing = [];
-    if (!process.env.OWNER_NUMBER) missing.push('OWNER_NUMBER');
+    if (!process.env.OWNER_NUMBER && !process.env.OWNER_LID) missing.push('OWNER_NUMBER atau OWNER_LID');
     if (AI_PROVIDER === 'gemini' && !(AI_API_KEY || process.env.GEMINI_API_KEY)) missing.push('AI_API_KEY / GEMINI_API_KEY');
     if ((AI_PROVIDER === 'openai' || AI_PROVIDER === 'chatgpt') && !(AI_API_KEY || process.env.OPENAI_API_KEY)) missing.push('AI_API_KEY / OPENAI_API_KEY');
     if ((AI_PROVIDER === 'claude' || AI_PROVIDER === 'anthropic') && !(AI_API_KEY || process.env.ANTHROPIC_API_KEY)) missing.push('AI_API_KEY / ANTHROPIC_API_KEY');
