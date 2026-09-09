@@ -5,6 +5,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "prestart": "if [ -d .git ]; then git reset --hard origin/main 2>/dev/null || true; git clean -fd -e .env -e auth_info 2>/dev/null || true; fi",
     "start": "node index.js",
     "postinstall": "npm rebuild protobufjs --ignore-scripts=false"
   },

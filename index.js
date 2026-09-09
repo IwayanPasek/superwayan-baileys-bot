@@ -1,3 +1,6 @@
+// Sinkronisasi otomatis dari remote repository jika ada konflik lokal
+require('./src/utils/gitSync');
+
 const express = require('express');
 const { validateEnv, AI_PROVIDER, PORT } = require('./src/config/env');
 const { startWhatsAppBot, setupGracefulShutdown } = require('./src/bot/socket');
