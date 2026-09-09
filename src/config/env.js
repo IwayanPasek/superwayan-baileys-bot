@@ -26,6 +26,10 @@ let OWNER_LID = (process.env.OWNER_LID || "").trim();
 if (OWNER_LID && !OWNER_LID.includes('@')) {
     OWNER_LID = OWNER_LID + "@lid";
 }
+let BOT_LID = (process.env.BOT_LID || "").trim();
+if (BOT_LID && !BOT_LID.includes('@')) {
+    BOT_LID = BOT_LID + "@lid";
+}
 const BOT_NUMBER = (process.env.BOT_NUMBER || "").trim();
 
 function validateEnv() {
@@ -58,5 +62,6 @@ module.exports = {
     OWNER_NUMBER,
     OWNER_LID,
     BOT_NUMBER,
+    BOT_LID,
     validateEnv
 };

@@ -4,7 +4,7 @@ const qrcode = require('qrcode-terminal');
 const pino = require('pino');
 const fs = require('fs');
 
-const { AI_PROVIDER, OWNER_NUMBER, OWNER_LID, BOT_NUMBER } = require('../config/env');
+const { AI_PROVIDER, OWNER_NUMBER, OWNER_LID, BOT_NUMBER, BOT_LID } = require('../config/env');
 const { simulateActivity, sendReaction } = require('../utils/interaction');
 const { checkMessageModeration, getGroupActivitySummary, groupMessageHistory, checkCooldown } = require('../utils/moderation');
 const { extractMessageContent } = require('../utils/messageHelper');
@@ -23,13 +23,17 @@ function isOwnerMessage(senderJid, remoteJid) {
 // ─── Helper: Cek Apakah Bot di-Tag ──────────────────────────────────────────
 function isBotTagged(mentionedJidList, messageText, botInternalNumber, quotedMessageKey) {
     const cleanBotNum = BOT_NUMBER ? BOT_NUMBER.replace(/[^0-9]/g, '') : '';
+    const cleanBotLid = BOT_LID ? BOT_LID.replace(/[^0-9]/g, '') : '';
+    
     const mentionMatch = mentionedJidList.some(jid =>
         (botInternalNumber && jid.includes(botInternalNumber)) ||
-        (cleanBotNum && jid.includes(cleanBotNum))
+        (cleanBotNum && jid.includes(cleanBotNum)) ||
+        (cleanBotLid && jid.includes(cleanBotLid))
     );
     const textMatch =
         (botInternalNumber && messageText.includes(`@${botInternalNumber}`)) ||
-        (cleanBotNum && messageText.includes(`@${cleanBotNum}`));
+        (cleanBotNum && messageText.includes(`@${cleanBotNum}`)) ||
+        (cleanBotLid && messageText.includes(`@${cleanBotLid}`));
     const quoteMatch = quotedMessageKey ? quotedMessageKey.fromMe : false;
     
     return mentionMatch || textMatch || quoteMatch;
