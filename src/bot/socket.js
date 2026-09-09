@@ -22,13 +22,14 @@ function isOwnerMessage(senderJid, remoteJid) {
 
 // ─── Helper: Cek Apakah Bot di-Tag ──────────────────────────────────────────
 function isBotTagged(mentionedJidList, messageText, botInternalNumber) {
+    const cleanBotNum = BOT_NUMBER ? BOT_NUMBER.replace(/[^0-9]/g, '') : '';
     const mentionMatch = mentionedJidList.some(jid =>
         (botInternalNumber && jid.includes(botInternalNumber)) ||
-        (BOT_NUMBER && jid.includes(BOT_NUMBER))
+        (cleanBotNum && jid.includes(cleanBotNum))
     );
     const textMatch =
         (botInternalNumber && messageText.includes(`@${botInternalNumber}`)) ||
-        (BOT_NUMBER && messageText.includes(`@${BOT_NUMBER}`));
+        (cleanBotNum && messageText.includes(`@${cleanBotNum}`));
     return mentionMatch || textMatch;
 }
 
@@ -137,7 +138,7 @@ async function handleMessageUpsert(sock, messages, type) {
     const senderJid = msg.key.participant || msg.key.remoteJid;
     const remoteJid = msg.key.remoteJid;
     const isGroup = remoteJid.endsWith('@g.us');
-    const botInternalNumber = sock.user?.id ? sock.user.id.split(':')[0] : '';
+    const botInternalNumber = sock.user?.id ? sock.user.id.split(':')[0].split('@')[0] : '';
     const { text: messageText, mentionedJid: mentionedJidList, quotedMessageKey } = extractMessageContent(msg, botInternalNumber);
 
     if (!messageText) return;
