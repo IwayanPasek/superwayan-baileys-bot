@@ -1,4 +1,4 @@
-# WhatsApp to API to AI Bot (SuperWayan) 🤖
+# SuperWayan - WhatsApp Baileys AI Bot 🤖
 
 Bot WhatsApp interaktif berbasis AI yang mendukung eksekusi tindakan otonom (*Autonomous Action Loop*), moderasi grup cerdas, dan integrasi multi-provider AI (**Google Gemini**, **OpenAI ChatGPT**, dan **Anthropic Claude**). Dibangun menggunakan library modern [`@whiskeysockets/baileys`](https://github.com/WhiskeySockets/Baileys).
 
@@ -72,8 +72,8 @@ Bot WhatsApp interaktif berbasis AI yang mendukung eksekusi tindakan otonom (*Au
 
 ### 2. Kloning & Instalasi Dependensi
 ```bash
-git clone https://github.com/username/whatsapp-to-api-to-ai.git
-cd "whatsapp-to-api-to-ai"
+git clone https://github.com/IwayanPasek/superwayan-baileys-bot.git
+cd superwayan-baileys-bot
 npm install
 ```
 

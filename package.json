@@ -1,7 +1,9 @@
 {
-  "name": "whatsapp-gemini-bot",
+  "name": "superwayan-baileys-bot",
   "version": "1.0.0",
+  "description": "AI-powered WhatsApp Bot using Baileys with multi-provider LLM (Gemini, OpenAI, Claude)",
   "main": "index.js",
+  "license": "MIT",
   "scripts": {
     "start": "node index.js",
     "postinstall": "npm rebuild protobufjs --ignore-scripts=false"
