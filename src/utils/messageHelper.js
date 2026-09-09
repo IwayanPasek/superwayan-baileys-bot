@@ -37,16 +37,46 @@ function cleanAiResponseForChat(text) {
         .trim();
 }
 
+function formatFriendlyError(detail) {
+    if (!detail) return 'Terdapat kendala pada sistem WhatsApp.';
+    const lower = detail.toLowerCase();
+    if (lower.includes('403') || lower.includes('admin') || lower.includes('forbidden') || lower.includes('not authorized')) {
+        return 'Bot membutuhkan hak akses Admin grup untuk menjalankan tindakan ini.';
+    }
+    if (lower.includes('tidak ditemukan')) {
+        return 'Target tidak ditemukan di dalam grup ini.';
+    }
+    if (lower.includes('creator') || lower.includes('owner')) {
+        return 'Pembuat / Owner grup tidak dapat dikenakan tindakan ini.';
+    }
+    if (lower.includes('diri sendiri')) {
+        return 'Bot tidak dapat menjalankan tindakan pada dirinya sendiri.';
+    }
+    if (lower.includes('timeout') || lower.includes('timed out')) {
+        return 'Waktu permintaan habis saat menghubungi server WhatsApp.';
+    }
+    return detail.replace(/^Error:\s*/i, '').trim();
+}
+
 function summarizeActionResults(results) {
-    const problems = results.filter(r => ['FORBIDDEN', 'ERROR', 'SKIPPED', 'CAPPED'].includes(r.status));
-    if (problems.length === 0) return '';
-    const lines = problems.map(r => {
-        if (r.status === 'FORBIDDEN') return `⚠️ ${r.name}: ditolak (${r.detail})`;
-        if (r.status === 'ERROR') return `⚠️ ${r.name}: gagal (${r.detail})`;
-        if (r.status === 'SKIPPED') return `ℹ️ ${r.name}: dilewati (${r.detail})`;
-        if (r.status === 'CAPPED') return `⚠️ ${r.name}: dilewati, mencapai batas aksi`;
-        return null;
-    }).filter(Boolean);
+    if (!results || results.length === 0) return '';
+    const lines = [];
+
+    for (const r of results) {
+        const actionName = (r.name || '').toUpperCase();
+        if (r.status === 'SUCCESS') {
+            lines.push(`✅ Berhasil: ${r.detail || actionName}`);
+        } else if (r.status === 'FORBIDDEN') {
+            lines.push(`⚠️ Tindakan ${actionName} tidak dapat dijalankan: ${formatFriendlyError(r.detail)}`);
+        } else if (r.status === 'ERROR') {
+            lines.push(`⚠️ Tindakan ${actionName} gagal diproses: ${formatFriendlyError(r.detail)}`);
+        } else if (r.status === 'SKIPPED') {
+            lines.push(`ℹ️ Tindakan ${actionName} dilewati: ${formatFriendlyError(r.detail)}`);
+        } else if (r.status === 'CAPPED') {
+            lines.push(`⚠️ Tindakan ${actionName} dilewati karena telah mencapai batas maksimal tindakan.`);
+        }
+    }
+
     return lines.length ? `\n\n${lines.join('\n')}` : '';
 }
 

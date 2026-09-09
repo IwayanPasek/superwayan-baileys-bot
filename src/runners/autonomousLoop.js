@@ -282,9 +282,17 @@ async function runFinalPhase(ctx) {
             const finalCleanedResponse = cleanAiResponseForChat(finalResponse) + summarizeActionResults(finalActionResults);
             const summaryText = formatLoopSummary(ctx.stats);
 
-            if (finalCleanedResponse.trim()) {
-                await updateStatusMessage(ctx.sock, ctx.remoteJid, `✅ *PROSES SELESAI & JAWABAN AKHIR*:\n\n${finalCleanedResponse}\n\n${summaryText}`, ctx.statusKeyRef);
+            let textToDisplay = finalCleanedResponse.trim();
+            if (!textToDisplay) {
+                if (finalActionResults.length > 0) {
+                    textToDisplay = summarizeActionResults(finalActionResults).trim();
+                }
+                if (!textToDisplay) {
+                    textToDisplay = "Seluruh rangkaian instruksi telah selesai diproses.";
+                }
             }
+
+            await updateStatusMessage(ctx.sock, ctx.remoteJid, `✅ *PROSES SELESAI & JAWABAN AKHIR*:\n\n${textToDisplay}\n\n${summaryText}`, ctx.statusKeyRef);
             console.log(`[LOG LOOP] Proses Selesai sukses dikirim ke chat.`);
             return;
         } catch (err) {

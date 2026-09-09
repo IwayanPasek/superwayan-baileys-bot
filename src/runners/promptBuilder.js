@@ -80,7 +80,7 @@ function buildSinglePrompt({ promptText, groupContext, chatHistory, errorFeedbac
         chatHistory ? `[Riwayat Diskusi Grup Sebelumnya]:\n${chatHistory}\n` : '',
         `[Instruksi Owner]: ${promptText}`,
         errorFeedback,
-        `[Instruksi Sistem: Sembunyikan penjelasan debug, alasan teknis internal, atau teks intro/outro dari chat balasan. Langsung berikan hasil akhir atau eksekusi aksi.]`
+        `[Instruksi Sistem: Jika Owner meminta tindakan seperti kick, promote, demote, add, setname, open/close grup, dsb, WAJIB langsung keluarkan blok perintah aksinya, misalnya [AKSI: KICK | nomor_target]. Ambil nomor atau JID dari [Target yang Di-Tag Owner] atau [Daftar Anggota]. JANGAN gunakan STATUS: LEWATI_AKSI kecuali target adalah Creator/Owner grup itu sendiri atau target tidak ada di grup. Sembunyikan penjelasan debug, alasan teknis internal, atau teks intro/outro dari chat balasan. Langsung berikan hasil akhir atau eksekusi aksi.]`
     ].filter(Boolean).join('\n');
 }
 

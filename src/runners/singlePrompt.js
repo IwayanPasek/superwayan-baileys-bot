@@ -86,13 +86,26 @@ async function runSinglePromptWithRetry(sock, msg, promptText, isGroup, mentione
             continue;
         }
 
-        // ── Kirim balasan ──
-        if (cleanedReplyText.trim()) {
-            await sock.sendMessage(remoteJid, { text: cleanedReplyText }, { quoted: msg }).catch(() => {});
-            console.log(`[LOG SINGLE PROMPT] Balasan bersih berhasil dikirim ke chat.`);
+        // ── Kirim balasan / Feedback ──
+        let textToSend = cleanedReplyText.trim();
+        if (!textToSend) {
+            if (actionResults.length > 0) {
+                textToSend = summarizeActionResults(actionResults).trim();
+            }
+            if (!textToSend) {
+                textToSend = "Permintaan telah diproses oleh asisten.";
+            }
         }
+
+        await sock.sendMessage(remoteJid, { text: textToSend }, { quoted: msg }).catch(() => {});
+        console.log(`[LOG SINGLE PROMPT] Balasan/feedback berhasil dikirim ke chat.`);
         return;
     }
+
+    // ── Jika seluruh attempt habis dan loop berakhir tanpa return ──
+    await sock.sendMessage(remoteJid, { 
+        text: "⚠️ Maaf, permintaan tidak dapat diselesaikan setelah beberapa kali percobaan. Silakan periksa kembali target atau izin admin grup." 
+    }, { quoted: msg }).catch(() => {});
 }
 
 module.exports = {
