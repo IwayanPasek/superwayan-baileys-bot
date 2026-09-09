@@ -86,7 +86,7 @@ async function handleOwnerCommand(sock, msg, promptText, isGroup, mentionedJidLi
     }
 
     // Berikan reaksi emoji tanda bot sedang memproses
-    await sendReaction(sock, remoteJid, msg.key, '🤖');
+    sendReaction(sock, remoteJid, msg.key, '🤖').catch(() => {});
 
     // Perintah ringkasan aktivitas grup (Analytics)
     const promptLower = promptText.toLowerCase();
@@ -148,7 +148,7 @@ async function handleMessageUpsert(sock, messages, type) {
     const isOwner = isOwnerMessage(senderJid, remoteJid);
 
     // Fitur Auto-Read & Simulating Typing
-    await simulateActivity(sock, remoteJid, msg.key);
+    simulateActivity(sock, remoteJid, msg.key).catch(() => {});
 
     // Fitur Moderasi Anti-Link
     const moderation = checkMessageModeration(messageText, isOwner);
