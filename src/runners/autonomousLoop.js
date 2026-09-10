@@ -19,6 +19,12 @@ class LoopCancelledError extends Error {
     constructor() { super('LOOP_CANCELLED'); this.name = 'LoopCancelledError'; }
 }
 
+function getContextJids(ctx) {
+    const fromMeta = ctx.groupMetadataInfo?.participants?.map(p => p.id) || [];
+    const fromMsg = ctx.msgContext?.mentionedJid || [];
+    return [...fromMeta, ...fromMsg];
+}
+
 // ─── Utility ────────────────────────────────────────────────────────────────
 
 /**
@@ -181,7 +187,7 @@ async function runSingleStep(ctx, outerStep, innerStep) {
         const cleanedResponse = cleanAiResponseForChat(aiResponse) + summarizeActionResults(actionResults);
         if (cleanedResponse.trim().length > 0) {
             const progressHeader = formatLoopProgress(outerStep, ctx.maxOuterSteps, innerStep, ctx.maxInnerSteps, ctx.stats);
-            await updateStatusMessage(ctx.sock, ctx.remoteJid, `${progressHeader}\n\n${cleanedResponse}`, ctx.statusKeyRef);
+            await updateStatusMessage(ctx.sock, ctx.remoteJid, `${progressHeader}\n\n${cleanedResponse}`, ctx.statusKeyRef, getContextJids(ctx));
         }
 
         // ── Cek apakah fase selesai ──
@@ -230,7 +236,7 @@ async function runFinalPhase(ctx) {
     let lastFinalErrors = "";
 
     console.log(`[LOG LOOP] Memasuki FASE SELESAI (Jawaban Akhir)...`);
-    await updateStatusMessage(ctx.sock, ctx.remoteJid, `[SYSTEM] Proses Mulai selesai. Melanjutkan ke Fase Selesai untuk memberikan jawaban akhir...`, ctx.statusKeyRef);
+    await updateStatusMessage(ctx.sock, ctx.remoteJid, `[SYSTEM] Proses Mulai selesai. Melanjutkan ke Fase Selesai untuk memberikan jawaban akhir...`, ctx.statusKeyRef, getContextJids(ctx));
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         checkCancelled(ctx.loopState);
@@ -258,7 +264,7 @@ async function runFinalPhase(ctx) {
                     cleaned = "Proses diselesaikan dengan menyesuaikan batasan hak akses sistem grup.";
                 }
                 const summaryText = formatLoopSummary(ctx.stats);
-                await updateStatusMessage(ctx.sock, ctx.remoteJid, `✅ *PROSES SELESAI & JAWABAN AKHIR*:\n\n${cleaned}\n\n${summaryText}`, ctx.statusKeyRef);
+                await updateStatusMessage(ctx.sock, ctx.remoteJid, `✅ *PROSES SELESAI & JAWABAN AKHIR*:\n\n${cleaned}\n\n${summaryText}`, ctx.statusKeyRef, getContextJids(ctx));
                 return;
             }
 
@@ -293,7 +299,7 @@ async function runFinalPhase(ctx) {
                 }
             }
 
-            await updateStatusMessage(ctx.sock, ctx.remoteJid, `✅ *PROSES SELESAI & JAWABAN AKHIR*:\n\n${textToDisplay}\n\n${summaryText}`, ctx.statusKeyRef);
+            await updateStatusMessage(ctx.sock, ctx.remoteJid, `✅ *PROSES SELESAI & JAWABAN AKHIR*:\n\n${textToDisplay}\n\n${summaryText}`, ctx.statusKeyRef, getContextJids(ctx));
             console.log(`[LOG LOOP] Proses Selesai sukses dikirim ke chat.`);
             return;
         } catch (err) {
@@ -304,7 +310,7 @@ async function runFinalPhase(ctx) {
 
             if (attempt >= maxRetries) {
                 const summaryText = formatLoopSummary(ctx.stats);
-                await updateStatusMessage(ctx.sock, ctx.remoteJid, `[ERROR] Gagal merampungkan fase selesai.\n\n${summaryText}`, ctx.statusKeyRef);
+                await updateStatusMessage(ctx.sock, ctx.remoteJid, `[ERROR] Gagal merampungkan fase selesai.\n\n${summaryText}`, ctx.statusKeyRef, getContextJids(ctx));
                 return;
             }
 
@@ -368,11 +374,11 @@ async function runNestedAutonomousLoop(
             const logPreview = ctx.executionLog.length > 0
                 ? ctx.executionLog.slice(-5).map(e => e.text).join('\n')
                 : '(belum ada)';
-            await updateStatusMessage(ctx.sock, ctx.remoteJid, `${summaryText}\n\nLog aksi terakhir:\n${logPreview}`, ctx.statusKeyRef);
+            await updateStatusMessage(ctx.sock, ctx.remoteJid, `${summaryText}\n\nLog aksi terakhir:\n${logPreview}`, ctx.statusKeyRef, getContextJids(ctx));
         } else {
             console.error(`[LOG LOOP ERROR FATAL]:`, err.message);
             const summaryText = formatLoopSummary(ctx.stats);
-            await updateStatusMessage(ctx.sock, ctx.remoteJid, `[ERROR] Terjadi kesalahan fatal: ${err.message}\n\n${summaryText}`, ctx.statusKeyRef).catch(() => {});
+            await updateStatusMessage(ctx.sock, ctx.remoteJid, `[ERROR] Terjadi kesalahan fatal: ${err.message}\n\n${summaryText}`, ctx.statusKeyRef, getContextJids(ctx)).catch(() => {});
         }
     } finally {
         console.log(`[LOG LOOP END] Melepaskan kunci activeLoops untuk grup: ${remoteJid}`);

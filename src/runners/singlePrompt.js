@@ -26,9 +26,12 @@ async function runSinglePromptWithRetry(sock, msg, promptText, isGroup, mentione
         // ── Bangun konteks grup ──
         const currentHistory = isGroup ? (groupMessageHistory[remoteJid] || []).join('\n') : "";
         let groupContext = "";
+        let contextJids = mentionedJidList || [];
+        
         if (isGroup) {
             try {
                 const groupMeta = await sock.groupMetadata(remoteJid);
+                contextJids = [...contextJids, ...groupMeta.participants.map(p => p.id)];
                 const participantListStr = formatParticipantsList(groupMeta.participants);
                 const taggedTargetsStr = formatMentionedTargets(mentionedJidList, botInternalNumber);
                 groupContext = `\n[Info Grup]: Nama: ${groupMeta.subject} | Total Anggota: ${groupMeta.participants.length}\n[Daftar Anggota]:\n${participantListStr}\n[Target yang Di-Tag Owner di Pesan Ini]: ${taggedTargetsStr}\n[Nomor Pengirim Pesan Ini (Owner)]: ${senderJid.split('@')[0]} (JID: ${senderJid})\n`;
@@ -68,7 +71,7 @@ async function runSinglePromptWithRetry(sock, msg, promptText, isGroup, mentione
             if (!cleaned || cleaned.trim().length === 0) {
                 cleaned = "Mohon maaf, aksi tidak dapat dijalankan atau dilewati karena terdapat batasan hak akses atau target tidak memenuhi syarat.";
             }
-            const mentions = extractMentions(cleaned);
+            const mentions = extractMentions(cleaned, contextJids);
             await sock.sendMessage(remoteJid, { text: cleaned, mentions }, { quoted: msg }).catch(() => {});
             return;
         }
@@ -98,7 +101,7 @@ async function runSinglePromptWithRetry(sock, msg, promptText, isGroup, mentione
             }
         }
 
-        const mentions = extractMentions(textToSend);
+        const mentions = extractMentions(textToSend, contextJids);
         await sock.sendMessage(remoteJid, { text: textToSend, mentions }, { quoted: msg }).catch(() => {});
         console.log(`[LOG SINGLE PROMPT] Balasan/feedback berhasil dikirim ke chat.`);
         return;

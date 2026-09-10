@@ -80,14 +80,18 @@ function summarizeActionResults(results) {
     return lines.length ? `\n\n${lines.join('\n')}` : '';
 }
 
-function extractMentions(text) {
+function extractMentions(text, contextJids = []) {
     const matches = text.match(/@\d+/g) || [];
-    return matches.map(m => m.substring(1) + "@s.whatsapp.net");
+    const nums = matches.map(m => m.substring(1));
+    return nums.map(num => {
+        const found = contextJids.find(j => j.startsWith(num + '@'));
+        return found ? found : num + "@s.whatsapp.net";
+    });
 }
 
-async function updateStatusMessage(sock, remoteJid, text, statusKeyRef) {
+async function updateStatusMessage(sock, remoteJid, text, statusKeyRef, contextJids = []) {
     try {
-        const mentions = extractMentions(text);
+        const mentions = extractMentions(text, contextJids);
         // Selalu kirim pesan baru sesuai instruksi (jangan diedit agar muncul terpisah per konteks)
         const sent = await sock.sendMessage(remoteJid, { text, mentions });
         return sent;
