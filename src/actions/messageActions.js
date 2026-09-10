@@ -107,6 +107,30 @@ const messageActions = {
         }
         if (deleted === 0) throw new Error('Gagal menghapus pesan (mungkin sudah dihapus/kadaluarsa)');
         return `Berhasil menghapus (undo) ${deleted} pesan terakhir bot.`;
+    },
+    TAG_ALL: async (sock, remoteJid, rawParams) => {
+        let meta;
+        try {
+            meta = await sock.groupMetadata(remoteJid);
+        } catch (e) {
+            throw new Error('Gagal mendapatkan daftar peserta grup');
+        }
+        if (!meta || !meta.participants) {
+            throw new Error('Data peserta grup tidak tersedia');
+        }
+        
+        const message = rawParams ? rawParams.trim() : 'Halo semua, Anda dipanggil oleh sistem.';
+        const participants = meta.participants.map(p => p.id);
+        
+        let mentionsText = '';
+        participants.forEach(jid => {
+            mentionsText += `@${jid.split('@')[0]} `;
+        });
+        
+        const fullMessage = `${message}\n\n${mentionsText.trim()}`;
+        console.log(`[LOG ACTION TAG_ALL] Men-tag ${participants.length} anggota di ${remoteJid}`);
+        await sock.sendMessage(remoteJid, { text: fullMessage, mentions: participants });
+        return `Berhasil men-tag ${participants.length} anggota.`;
     }
 };
 
