@@ -60,11 +60,30 @@ const messageActions = {
         return `Tugas terjadwal dalam ${minutes} menit`;
     },
     DELETE: async (sock, remoteJid, rawParams, msgContext) => {
-        if (msgContext && msgContext.quotedMessageKey) {
-            console.log(`[LOG ACTION DELETE] Menghapus pesan berdasarkan quoted message key di ${remoteJid}`);
-            await sock.sendMessage(remoteJid, { delete: msgContext.quotedMessageKey });
-            return `Menghapus pesan yang dibalas`;
+        const { checkParticipantPrivileges } = require('../utils/privileges');
+        const botJid = sock.user?.id ? sock.user.id.split(':')[0] + '@s.whatsapp.net' : null;
+        
+        // Cek status bot di grup
+        let botIsAdmin = false;
+        if (remoteJid.endsWith('@g.us') && botJid) {
+            const priv = await checkParticipantPrivileges(sock, remoteJid, botJid);
+            botIsAdmin = priv.isAdmin || priv.isSuperAdmin;
+        } else {
+            botIsAdmin = true; // Privat chat, bot selalu bisa menghapus pesannya sendiri
         }
+
+        if (msgContext && msgContext.quotedMessageKey) {
+            const key = msgContext.quotedMessageKey;
+            console.log(`[LOG ACTION DELETE] Evaluasi hapus pesan: fromMe=${key.fromMe}, botIsAdmin=${botIsAdmin}`);
+            
+            if (!key.fromMe && !botIsAdmin) {
+                throw new Error('Aksi ditolak: Bot tidak memiliki hak admin untuk menghapus pesan orang lain (Bot hanya dapat menghapus pesannya sendiri).');
+            }
+            
+            await sock.sendMessage(remoteJid, { delete: key });
+            return key.fromMe ? `Menghapus pesan (bot) yang dibalas` : `Menghapus pesan anggota yang dibalas`;
+        }
+        
         const params = (rawParams || '').trim();
         if (!params) throw new Error('ID pesan atau pesan yang dibalas tidak ditemukan untuk dihapus');
 
@@ -79,6 +98,11 @@ const messageActions = {
         if (participantRaw) {
             deleteKey.participant = toJid(participantRaw);
         }
+        
+        if (!botIsAdmin) {
+            throw new Error('Aksi ditolak: Bot bukan admin sehingga tidak bisa menghapus pesan berdasarkan ID dari orang lain.');
+        }
+
         console.log(`[LOG ACTION DELETE] Menghapus pesan dengan ID: ${targetId} di ${remoteJid}`);
         await sock.sendMessage(remoteJid, { delete: deleteKey });
         return `Menghapus pesan dengan ID: ${targetId}`;
