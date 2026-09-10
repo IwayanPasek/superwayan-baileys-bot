@@ -51,6 +51,12 @@ function stripBotMentions(text, botInternalNumber) {
             cleaned = cleaned.replace(new RegExp(`@${cleanBot}\\b`, 'g'), '');
         }
     }
+    if (BOT_LID) {
+        const cleanLid = BOT_LID.replace(/[^0-9]/g, '');
+        if (cleanLid) {
+            cleaned = cleaned.replace(new RegExp(`@${cleanLid}\\b`, 'g'), '');
+        }
+    }
     return cleaned.trim();
 }
 

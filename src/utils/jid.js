@@ -1,4 +1,4 @@
-const { BOT_NUMBER } = require('../config/env');
+const { BOT_NUMBER, BOT_LID } = require('../config/env');
 
 function toJid(raw) {
     let t = (raw || '').trim();
@@ -46,9 +46,10 @@ function formatParticipantsList(participants, limit = 100) {
 function formatMentionedTargets(mentionedJidList, botInternalNumber) {
     if (!mentionedJidList || mentionedJidList.length === 0) return '(tidak ada target yang di-tag pada pesan ini)';
     const cleanBot = (BOT_NUMBER || '').replace(/[^0-9]/g, '');
+    const cleanLid = (BOT_LID || '').replace(/[^0-9]/g, '');
     const filtered = mentionedJidList.filter(jid => {
         const num = jid.split('@')[0];
-        return num !== botInternalNumber && (!cleanBot || num !== cleanBot);
+        return num !== botInternalNumber && (!cleanBot || num !== cleanBot) && (!cleanLid || num !== cleanLid);
     });
     if (filtered.length === 0) return '(tidak ada target yang di-tag pada pesan ini)';
     return filtered.map((jid, idx) => `${idx + 1}. ${jid.split('@')[0]} (JID: ${jid})`).join(', ');
