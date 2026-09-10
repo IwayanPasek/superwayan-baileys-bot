@@ -117,6 +117,8 @@ async function handleOwnerCommand(sock, msg, promptText, isGroup, mentionedJidLi
     const isLoopTrigger = promptLower.includes("loop") ||
         promptLower.includes("lanjutkan terus") ||
         promptLower.includes("proses berkelanjutan") ||
+        promptLower.includes("@all") ||
+        promptLower.includes("semua") ||
         isMultiTarget;
 
     if (isLoopTrigger && isGroup) {
