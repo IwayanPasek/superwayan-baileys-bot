@@ -103,10 +103,21 @@ async function handleOwnerCommand(sock, msg, promptText, isGroup, mentionedJidLi
         return;
     }
 
+    // Hitung jumlah tag (di luar tag bot)
+    const nonBotMentions = mentionedJidList.filter(jid => {
+        const cleanBotNum = BOT_NUMBER ? BOT_NUMBER.replace(/[^0-9]/g, '') : '';
+        const cleanBotLid = BOT_LID ? BOT_LID.replace(/[^0-9]/g, '') : '';
+        return !(botInternalNumber && jid.includes(botInternalNumber)) &&
+               !(cleanBotNum && jid.includes(cleanBotNum)) &&
+               !(cleanBotLid && jid.includes(cleanBotLid));
+    });
+
     // Deteksi trigger autonomous loop
+    const isMultiTarget = nonBotMentions.length > 1;
     const isLoopTrigger = promptLower.includes("loop") ||
         promptLower.includes("lanjutkan terus") ||
-        promptLower.includes("proses berkelanjutan");
+        promptLower.includes("proses berkelanjutan") ||
+        isMultiTarget;
 
     if (isLoopTrigger && isGroup) {
         log.info('LOOP', 'Pemicu autonomous loop terdeteksi');
@@ -178,7 +189,7 @@ async function handleMessageUpsert(sock, messages, type) {
 
     // Cek apakah bot di-tag
     const isTagged = isBotTagged(mentionedJidList, messageText, botInternalNumber, quotedMessageKey);
-    log.info('ACCESS', `Evaluasi Tag - isTagged: ${isTagged}, isOwner: ${isOwner}, isGroup: ${isGroup}, botInternalNumber: ${botInternalNumber}, text: "${messageText}", mentions: ${JSON.stringify(mentionedJidList)}, quote: ${quotedMessageKey ? 'yes' : 'no'}`);
+    log.info('ACCESS', `Evaluasi Tag - isTagged: ${isTagged}, isOwner: ${isOwner}, isGroup: ${isGroup}, text: "${messageText}", mentions: ${JSON.stringify(mentionedJidList)}, quote: ${quotedMessageKey ? 'yes' : 'no'}, BOT_LID_ENV: ${BOT_LID}`);
 
     // Tolak akses member biasa yang tag bot
     if (isTagged && !isOwner) {
