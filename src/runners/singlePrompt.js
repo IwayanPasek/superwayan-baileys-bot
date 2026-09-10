@@ -2,7 +2,7 @@ const { formatParticipantsList, formatMentionedTargets } = require('../utils/jid
 const { groupMessageHistory } = require('../utils/moderation');
 const { generateWithRetry } = require('../ai/provider');
 const { executeAiActions } = require('../actions');
-const { cleanAiResponseForChat, summarizeActionResults } = require('../utils/messageHelper');
+const { cleanAiResponseForChat, summarizeActionResults, extractMentions } = require('../utils/messageHelper');
 const { buildSinglePrompt, buildErrorFeedback } = require('./promptBuilder');
 const { LOOP_BASE_RETRY_DELAY_MS } = require('../config/env');
 
@@ -68,7 +68,8 @@ async function runSinglePromptWithRetry(sock, msg, promptText, isGroup, mentione
             if (!cleaned || cleaned.trim().length === 0) {
                 cleaned = "Mohon maaf, aksi tidak dapat dijalankan atau dilewati karena terdapat batasan hak akses atau target tidak memenuhi syarat.";
             }
-            await sock.sendMessage(remoteJid, { text: cleaned }, { quoted: msg }).catch(() => {});
+            const mentions = extractMentions(cleaned);
+            await sock.sendMessage(remoteJid, { text: cleaned, mentions }, { quoted: msg }).catch(() => {});
             return;
         }
 
@@ -97,7 +98,8 @@ async function runSinglePromptWithRetry(sock, msg, promptText, isGroup, mentione
             }
         }
 
-        await sock.sendMessage(remoteJid, { text: textToSend }, { quoted: msg }).catch(() => {});
+        const mentions = extractMentions(textToSend);
+        await sock.sendMessage(remoteJid, { text: textToSend, mentions }, { quoted: msg }).catch(() => {});
         console.log(`[LOG SINGLE PROMPT] Balasan/feedback berhasil dikirim ke chat.`);
         return;
     }

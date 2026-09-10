@@ -80,21 +80,20 @@ function summarizeActionResults(results) {
     return lines.length ? `\n\n${lines.join('\n')}` : '';
 }
 
+function extractMentions(text) {
+    const matches = text.match(/@\d+/g) || [];
+    return matches.map(m => m.substring(1) + "@s.whatsapp.net");
+}
+
 async function updateStatusMessage(sock, remoteJid, text, statusKeyRef) {
     try {
-        console.log(`[LOG STATUS MSG] Mencoba mengedit pesan status di ${remoteJid}`);
-        const sent = await sock.sendMessage(remoteJid, { text, edit: statusKeyRef.key });
+        const mentions = extractMentions(text);
+        // Selalu kirim pesan baru sesuai instruksi (jangan diedit agar muncul terpisah per konteks)
+        const sent = await sock.sendMessage(remoteJid, { text, mentions });
         return sent;
-    } catch (editErr) {
-        console.log(`[LOG STATUS MSG] Edit pesan gagal (${editErr.message}), mengirim pesan baru sebagai gantinya...`);
-        try {
-            const sent = await sock.sendMessage(remoteJid, { text });
-            statusKeyRef.key = sent.key;
-            return sent;
-        } catch (sendErr) {
-            console.error(`[LOG STATUS ERROR FATAL] Gagal mengirim pesan status baru:`, sendErr.message);
-            return null;
-        }
+    } catch (sendErr) {
+        console.error(`[LOG STATUS ERROR FATAL] Gagal mengirim pesan balasan baru:`, sendErr.message);
+        return null;
     }
 }
 
@@ -139,5 +138,6 @@ module.exports = {
     summarizeActionResults,
     updateStatusMessage,
     formatLoopProgress,
-    formatLoopSummary
+    formatLoopSummary,
+    extractMentions
 };
