@@ -85,7 +85,7 @@ const messageActions = {
         }
         
         const params = (rawParams || '').trim();
-        if (!params) throw new Error('ID pesan atau pesan yang dibalas tidak ditemukan untuk dihapus');
+        if (!params) throw new Error('GAGAL: Owner tidak me-reply (quote) pesan apapun. [AKSI: DELETE] HANYA bisa digunakan jika Owner me-reply pesan target. Jika Owner menyuruh menghapus pesan bot itu sendiri, gunakan [AKSI: UNDO | jumlah].');
 
         const [targetId, participantRaw] = params.split('|').map(s => (s || '').trim());
         if (!targetId) throw new Error('ID pesan tidak valid');
