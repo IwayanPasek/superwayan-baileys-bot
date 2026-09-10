@@ -8,6 +8,7 @@ const { AI_PROVIDER, OWNER_NUMBER, OWNER_LID, BOT_NUMBER, BOT_LID } = require('.
 const { simulateActivity, sendReaction } = require('../utils/interaction');
 const { checkMessageModeration, getGroupActivitySummary, groupMessageHistory, checkCooldown } = require('../utils/moderation');
 const { extractMessageContent } = require('../utils/messageHelper');
+const { recordBotMessage } = require('../utils/botMessageHistory');
 const { activeLoops, runNestedAutonomousLoop, cancelAllLoops } = require('../runners/autonomousLoop');
 const { runSinglePromptWithRetry } = require('../runners/singlePrompt');
 const log = require('../utils/logger');
@@ -265,6 +266,14 @@ async function startWhatsAppBot() {
 
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
         try {
+            const msg = messages[0];
+            
+            // Rekam pesan yang dikirim oleh bot untuk keperluan fitur UNDO / Hapus
+            if (msg && msg.key && msg.key.fromMe) {
+                recordBotMessage(msg.key.remoteJid, msg.key);
+                return; // Jangan memproses pesan dari diri sendiri sebagai perintah
+            }
+            
             await handleMessageUpsert(sock, messages, type);
         } catch (handlerErr) {
             log.fatal('MESSAGE', 'Error fatal pada messages.upsert handler', handlerErr);

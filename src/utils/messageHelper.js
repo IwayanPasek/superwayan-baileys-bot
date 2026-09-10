@@ -18,11 +18,18 @@ function extractMessageContent(msg, botInternalNumber) {
     const contextInfo = normalized.extendedTextMessage?.contextInfo;
     if (contextInfo && contextInfo.stanzaId) {
         const quotedParticipant = contextInfo.participant || msg.key.remoteJid;
+        const quotedNum = quotedParticipant ? quotedParticipant.split('@')[0] : '';
+        const { BOT_NUMBER, BOT_LID } = require('../config/env');
+        const cleanBot = BOT_NUMBER ? BOT_NUMBER.replace(/[^0-9]/g, '') : '';
+        const cleanLid = BOT_LID ? BOT_LID.replace(/[^0-9]/g, '') : '';
+        
         quotedMessageKey = {
             remoteJid: msg.key.remoteJid,
             id: contextInfo.stanzaId,
             participant: quotedParticipant,
-            fromMe: botInternalNumber ? quotedParticipant.split('@')[0] === botInternalNumber : false
+            fromMe: (botInternalNumber && quotedNum === botInternalNumber) || 
+                    (cleanBot && quotedNum === cleanBot) || 
+                    (cleanLid && quotedNum === cleanLid)
         };
     }
 

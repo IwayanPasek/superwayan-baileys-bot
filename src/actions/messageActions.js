@@ -1,6 +1,7 @@
 const { toJid } = require('../utils/jid');
 const { ENABLE_SEND_DM } = require('../config/env');
 const { sendGroupPoll, scheduleTask } = require('../utils/interaction');
+const { popRecentBotMessages } = require('../utils/botMessageHistory');
 
 const messageActions = {
     SEND_DM: async (sock, remoteJid, rawParams) => {
@@ -81,6 +82,31 @@ const messageActions = {
         console.log(`[LOG ACTION DELETE] Menghapus pesan dengan ID: ${targetId} di ${remoteJid}`);
         await sock.sendMessage(remoteJid, { delete: deleteKey });
         return `Menghapus pesan dengan ID: ${targetId}`;
+    },
+    UNDO: async (sock, remoteJid, rawParams, msgContext) => {
+        // Jika ada pesan spesifik dari bot yang di-reply/dikutip
+        if (msgContext && msgContext.quotedMessageKey && msgContext.quotedMessageKey.fromMe) {
+            console.log(`[LOG ACTION UNDO] Menghapus pesan (bot) yang di-reply di ${remoteJid}`);
+            await sock.sendMessage(remoteJid, { delete: msgContext.quotedMessageKey });
+            return `Menghapus (undo) pesan yang Anda reply.`;
+        }
+        
+        // Hapus berdasarkan recent history
+        const count = parseInt((rawParams || '').trim(), 10) || 1;
+        const keys = popRecentBotMessages(remoteJid, count);
+        if (keys.length === 0) throw new Error('Tidak ada pesan terbaru bot yang tercatat untuk dihapus');
+        
+        let deleted = 0;
+        for (const key of keys) {
+            try {
+                await sock.sendMessage(remoteJid, { delete: key });
+                deleted++;
+            } catch (e) {
+                console.error('[LOG ACTION UNDO] Gagal hapus pesan bot:', e.message);
+            }
+        }
+        if (deleted === 0) throw new Error('Gagal menghapus pesan (mungkin sudah dihapus/kadaluarsa)');
+        return `Berhasil menghapus (undo) ${deleted} pesan terakhir bot.`;
     }
 };
 
